@@ -134,7 +134,7 @@ namespace Vizcon.OSC
                 throw new InvalidOperationException("Not a bundle");
 
             UInt64 timetag = GetULong(bundle, ref index);
-            List<OscMessage> messages = [];
+            List<OscMessage> messages = new List<OscMessage>();
 
             while (index < bundle.Length)
             {
@@ -148,7 +148,7 @@ namespace Vizcon.OSC
                 AlignIndex(ref index);
             }
 
-            return new OscBundle(timetag, [.. messages]);
+            return new OscBundle(new Timetag(timetag), messages);
         }
 
         #endregion
@@ -179,14 +179,24 @@ namespace Vizcon.OSC
 
         private static int GetInt(byte[] msg, ref int index)
         {
-            int val = BitConverter.ToInt32(msg, index);
+            byte[] intBytes = msg.AsSpan(index, 4).ToArray();
+            if (BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(intBytes);
+            }
+            int val = BitConverter.ToInt32(intBytes, 0);
             index += 4;
             return val;
         }
 
         private static float GetFloat(byte[] msg, ref int index)
         {
-            float val = BitConverter.ToSingle(msg, index);
+            byte[] floatBytes = msg.AsSpan(index, 4).ToArray();
+            if (BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(floatBytes);
+            }
+            float val = BitConverter.ToSingle(floatBytes, 0);
             index += 4;
             return val;
         }
@@ -262,14 +272,30 @@ namespace Vizcon.OSC
 
         #region Create byte arrays for arguments
 
-        protected static byte[] SetInt(int value) => BitConverter.GetBytes(value);
+        protected static byte[] SetInt(int value)
+        {
+            byte[] intBytes = BitConverter.GetBytes(value);
+            if (BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(intBytes);
+            }
+            return intBytes;
+        }
 
-        protected static byte[] setFloat(float value) => BitConverter.GetBytes(value);
+        protected static byte[] SetFloat(float value)
+        {
+            byte[] floatBytes = BitConverter.GetBytes(value);
+            if (BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(floatBytes);
+            }
+            return floatBytes;
+        }
 
         protected static byte[] SetString(string value)
         {
-            int len = value.Length + (4 - value.Length % 4);
-            if (len <= value.Length) len += 4;
+            int len = value.Length + 1;
+            while (len % 4 != 0) len++;
 
             byte[] msg = new byte[len];
             Encoding.ASCII.GetBytes(value).CopyTo(msg, 0);

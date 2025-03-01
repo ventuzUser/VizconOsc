@@ -23,11 +23,21 @@ namespace Vizcon.OSC
 
         public List<OscMessage> Messages;
 
-        public OscBundle(ulong timetag, params OscMessage[] args)
+        public OscBundle(DateTime timestamp, params OscMessage[] args)
         {
-            _timetag = new Timetag(timetag);
-            Messages = new List<OscMessage>();
-            Messages.AddRange(args);
+            _timetag = new Timetag(DateTimeToOscTimetag(timestamp));
+            Messages = [.. args];
+        }
+
+        private static ulong DateTimeToOscTimetag(DateTime timestamp)
+        {
+            DateTime oscEpoch = new DateTime(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            TimeSpan diff = timestamp.ToUniversalTime() - oscEpoch;
+
+            uint seconds = (uint)diff.TotalSeconds;
+            uint fractional = (uint)((diff.TotalSeconds - seconds) * 4294967296.0); // Convert fractional part
+
+            return ((ulong)seconds << 32) | fractional;
         }
 
         public override byte[] GetBytes()

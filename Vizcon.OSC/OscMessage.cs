@@ -44,7 +44,7 @@ namespace Vizcon.OSC
                         else
                         {
                             typeString += "f";
-                            parts.Add(setFloat((float)arg));
+                            parts.Add(SetFloat((float)arg));
                         }
                         break;
                     case "System.String":
