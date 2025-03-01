@@ -9,7 +9,7 @@
 
 	<PropertyGroup>
 		<PackageId>Vizcon.OSC</PackageId>
-		<Version>1.0.0</Version>
+		<Version>1.0.1</Version>
 		<Authors>ventuzUser</Authors>
 		<Description>A modernized fork of SharpOSC, upgraded to .NET 8.</Description>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
