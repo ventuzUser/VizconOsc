@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vizcon.OSC", "Vizcon.OSC\Vi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp.Wpf", "TestApp.Wpf\TestApp.Wpf.csproj", "{110F3B68-512E-4E2C-8FC7-6EF1540FBBEA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp.Console", "TestApp.Console\TestApp.Console.csproj", "{86012D58-6965-45CD-9EFA-8FB3FC8AD55A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{110F3B68-512E-4E2C-8FC7-6EF1540FBBEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{110F3B68-512E-4E2C-8FC7-6EF1540FBBEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{110F3B68-512E-4E2C-8FC7-6EF1540FBBEA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86012D58-6965-45CD-9EFA-8FB3FC8AD55A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86012D58-6965-45CD-9EFA-8FB3FC8AD55A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86012D58-6965-45CD-9EFA-8FB3FC8AD55A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86012D58-6965-45CD-9EFA-8FB3FC8AD55A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

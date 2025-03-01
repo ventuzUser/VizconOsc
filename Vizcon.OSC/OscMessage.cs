@@ -13,14 +13,14 @@ namespace Vizcon.OSC
         public OscMessage(string address, params object[] args)
         {
             Address = address;
-            Arguments = [.. args];
+            Arguments = args?.ToList() ?? new List<object>();
         }
 
         public override byte[] GetBytes()
         {
             List<byte[]> parts = new List<byte[]>();
 
-            List<object> currentList = Arguments;
+            List<object> currentList = Arguments ?? new List<object>();
             int ArgumentsIndex = 0;
 
             string typeString = ",";
@@ -108,13 +108,13 @@ namespace Vizcon.OSC
                     // currentList back with Arguments and continue from where we left off
                     case "System.Object[]":
                     case "System.Collections.Generic.List`1[System.Object]":
-                        if (arg.GetType() == typeof(object[]))
-                            arg = ((object[])arg).ToList();
+                        if (arg is object[] objArray)
+                            arg = objArray.ToList();
 
                         if (Arguments != currentList)
                             throw new Exception("Nested Arrays are not supported");
                         typeString += "[";
-                        currentList = (List<object>)arg;
+                        currentList = (List<object>)arg ?? [];
                         ArgumentsIndex = i;
                         i = 0;
                         continue;
@@ -128,7 +128,7 @@ namespace Vizcon.OSC
                 {
                     // End of array, go back to main Argument list
                     typeString += "]";
-                    currentList = Arguments;
+                    currentList = Arguments ?? new List<object>();
                     i = ArgumentsIndex + 1;
                 }
             }
