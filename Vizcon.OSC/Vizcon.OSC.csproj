@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
@@ -7,9 +7,13 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	</PropertyGroup>
 
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="README.md" />
+	</ItemGroup>
+
 	<PropertyGroup>
 		<PackageId>Vizcon.OSC</PackageId>
-		<Version>1.0.1</Version>
+		<Version>1.0.2</Version>
 		<Authors>ventuzUser</Authors>
 		<Description>A modernized fork of SharpOSC, upgraded to .NET 8.</Description>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -17,6 +21,7 @@
 		<RepositoryType>git</RepositoryType>
 		<PackageTags>OSC, OpenSoundControl, .NET8, SharpOSC</PackageTags>
 		<PackageProjectUrl>https://github.com/ventuzUser/Vizcon.OSC</PackageProjectUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<IncludeSymbols>true</IncludeSymbols>
 		<IncludeSource>true</IncludeSource>
 	</PropertyGroup>
