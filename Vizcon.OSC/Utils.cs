@@ -57,7 +57,10 @@ namespace Vizcon.OSC
         /// <returns>The aligned string length.</returns>
         public static int AlignedStringLength(string val)
         {
-            return (val.Length + 3) & ~3;
+            int len = val.Length + 1; // +1 for null terminator
+            while (len % 4 != 0) len++; // Ensure 4-byte alignment
+            return len;
         }
+
     }
 }

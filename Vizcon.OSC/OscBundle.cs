@@ -9,7 +9,7 @@ namespace Vizcon.OSC
     {
         Timetag _timetag;
 
-        public ulong Timetag
+        public UInt64 Timetag
         {
             get { return _timetag.Tag; }
             set { _timetag.Tag = value; }
@@ -23,10 +23,11 @@ namespace Vizcon.OSC
 
         public List<OscMessage> Messages;
 
-        public OscBundle(DateTime timestamp, params OscMessage[] args)
+        public OscBundle(UInt64 timetag, params OscMessage[] args)
         {
-            _timetag = new Timetag(DateTimeToOscTimetag(timestamp));
-            Messages = [.. args];
+            _timetag = new Timetag(timetag);
+            Messages = new List<OscMessage>();
+            Messages.AddRange(args);
         }
 
         private static ulong DateTimeToOscTimetag(DateTime timestamp)

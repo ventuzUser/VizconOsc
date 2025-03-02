@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Vizcon.OSC
@@ -11,13 +12,13 @@ namespace Vizcon.OSC
             if (OscData == null || OscData.Length == 0)
                 throw new ArgumentException("OSC data array is empty.", nameof(OscData));
 
-            return OscData[0] == '#' ? parseBundle(OscData) : parseMessage(OscData);
+            return OscData[0] == '#' ? parseBundle(OscData) : ParseMessage(OscData);
         }
 
         public abstract byte[] GetBytes();
 
         #region Parse OSC packages
-        private static OscMessage parseMessage(byte[] msg)
+        private static OscMessage ParseMessage(byte[] msg)
         {
             int index = 0;
 
@@ -125,30 +126,37 @@ namespace Vizcon.OSC
 
         private static OscBundle parseBundle(byte[] bundle)
         {
+            UInt64 timetag;
+            List<OscMessage> messages = new List<OscMessage>();
+
             int index = 0;
 
-            var bundleTag = Encoding.ASCII.GetString(bundle.AsSpan(0, 8));
+            var bundleTag = Encoding.ASCII.GetString(bundle.SubArray(0, 8));
+            index += 8;
+
+            timetag = GetULong(bundle, ref index);
             index += 8;
 
             if (bundleTag != "#bundle\0")
-                throw new InvalidOperationException("Not a bundle");
-
-            UInt64 timetag = GetULong(bundle, ref index);
-            List<OscMessage> messages = new List<OscMessage>();
+                throw new Exception("Not a bundle");
 
             while (index < bundle.Length)
             {
                 int size = GetInt(bundle, ref index);
-                byte[] messageBytes = bundle.AsSpan(index, size).ToArray();
-                var message = parseMessage(messageBytes);
+                index += 4;
+
+                byte[] messageBytes = bundle.SubArray(index, size);
+                var message = ParseMessage(messageBytes);
 
                 messages.Add(message);
 
                 index += size;
-                AlignIndex(ref index);
+                while (index % 4 != 0)
+                    index++;
             }
 
-            return new OscBundle(new Timetag(timetag), messages);
+            OscBundle output = new OscBundle(timetag, messages.ToArray());
+            return output;
         }
 
         #endregion
@@ -287,15 +295,15 @@ namespace Vizcon.OSC
             byte[] floatBytes = BitConverter.GetBytes(value);
             if (BitConverter.IsLittleEndian)
             {
-                Array.Reverse(floatBytes);
+                Array.Reverse(floatBytes);  // Convert to Big Endian
             }
             return floatBytes;
         }
 
         protected static byte[] SetString(string value)
         {
-            int len = value.Length + 1;
-            while (len % 4 != 0) len++;
+            int len = value.Length + 1; // +1 for null terminator
+            while (len % 4 != 0) len++; // Ensure 4-byte alignment
 
             byte[] msg = new byte[len];
             Encoding.ASCII.GetBytes(value).CopyTo(msg, 0);

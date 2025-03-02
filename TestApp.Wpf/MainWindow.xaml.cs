@@ -25,9 +25,16 @@ public partial class MainWindow : Window
         // Wait a moment for listener to start
         Thread.Sleep(1000);
 
-        var sender = new UDPSender("127.0.0.1", 9000);
-        var bundle = new OscBundle(DateTime.UtcNow, new OscMessage("/test", 43));
+        var sender = new UDPSender("127.0.0.1", 7000);
+        var bundle = new OscBundle(Utils.DateTimeToTimetag(DateTime.UtcNow), new OscMessage("/test", 47, "asdfasd", 0.2f));
 
+        //var parms = new object[] { 51, "huhu", 3.1f};
+        //var message = new OscMessage("/test", new object[] { 54, "miau", (float)3.1 });
+
+        //var message = new OscMessage("/test", parms);
+
+
+        //sender.Send(message);
         sender.Send(bundle);
 
 
