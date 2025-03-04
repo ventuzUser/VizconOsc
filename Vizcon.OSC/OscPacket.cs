@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -24,6 +25,10 @@ namespace Vizcon.OSC
 
             string address = GetAddress(msg, ref index);
             char[] types = GetTypes(msg, ref index);
+            // Ensure index is correctly aligned before parsing arguments
+            AlignIndex(index: ref index);
+            Debug.WriteLine($"After Aligning Index for Arguments: {index}");
+
             List<object> arguments = [];
             List<object> mainArray = arguments; // used as a reference when we are parsing arrays to get the main array back
 
@@ -52,6 +57,7 @@ namespace Vizcon.OSC
                         break;
 
                     case 's':
+                        Debug.WriteLine($"Before GetString() - Expected Start Index: {index}");
                         arguments.Add(GetString(msg, ref index));
                         break;
 
@@ -126,38 +132,54 @@ namespace Vizcon.OSC
 
         private static OscBundle parseBundle(byte[] bundle)
         {
-            UInt64 timetag;
-            List<OscMessage> messages = new List<OscMessage>();
+            if (bundle.Length < 16)
+                throw new ArgumentException("Bundle is too small to contain valid OSC data.");
 
             int index = 0;
 
-            var bundleTag = Encoding.ASCII.GetString(bundle.SubArray(0, 8));
+            var bundleTag = Encoding.ASCII.GetString(bundle, 0, 8);
+            Debug.WriteLine($"Bundle tag: {bundleTag}");
             index += 8;
 
-            timetag = GetULong(bundle, ref index);
-            index += 8;
+            UInt64 timetag = GetULong(bundle, ref index);
+            Debug.WriteLine($"Timetag extracted: {timetag}, New index: {index}");
 
             if (bundleTag != "#bundle\0")
-                throw new Exception("Not a bundle");
+                throw new Exception("Not a valid OSC bundle");
+
+            List<OscMessage> messages = new List<OscMessage>();
 
             while (index < bundle.Length)
             {
+                if (index + 4 > bundle.Length)
+                {
+                    Debug.WriteLine("Warning: Not enough bytes left to read the size.");
+                    break;
+                }
+
                 int size = GetInt(bundle, ref index);
-                index += 4;
+                Debug.WriteLine($"Extracted Message Size: {size} at index {index}");
 
-                byte[] messageBytes = bundle.SubArray(index, size);
+                if (size < 0 || index + size > bundle.Length)
+                {
+                    Debug.WriteLine("Warning: Message size exceeds available data.");
+                    break;
+                }
+
+                byte[] messageBytes = bundle.Skip(index).Take(size).ToArray();
+                Debug.WriteLine($"Extracted Message Bytes: {BitConverter.ToString(messageBytes)}");
+
                 var message = ParseMessage(messageBytes);
-
                 messages.Add(message);
 
                 index += size;
                 while (index % 4 != 0)
                     index++;
             }
-
-            OscBundle output = new OscBundle(timetag, messages.ToArray());
-            return output;
+            Debug.WriteLine($"Total messages extracted: {messages.Count}");
+            return new OscBundle(timetag, messages.ToArray());
         }
+
 
         #endregion
 
@@ -187,7 +209,12 @@ namespace Vizcon.OSC
 
         private static int GetInt(byte[] msg, ref int index)
         {
+            if (index + 4 > msg.Length)
+                throw new ArgumentException("Not enough bytes left to read an integer.");
+
             byte[] intBytes = msg.AsSpan(index, 4).ToArray();
+            Debug.WriteLine($"Raw size bytes: {BitConverter.ToString(intBytes)} at index {index}");
+
             if (BitConverter.IsLittleEndian)
             {
                 Array.Reverse(intBytes);
@@ -196,6 +223,8 @@ namespace Vizcon.OSC
             index += 4;
             return val;
         }
+
+
 
         private static float GetFloat(byte[] msg, ref int index)
         {
@@ -213,12 +242,17 @@ namespace Vizcon.OSC
         {
             int start = index;
             int end = Array.IndexOf(msg, (byte)0, start);
+
             if (end == -1)
-                throw new InvalidOperationException("No null terminator after string.");
+                throw new InvalidOperationException($"No null terminator after string at index {index}.");
+
+            string extracted = Encoding.ASCII.GetString(msg, start, end - start).TrimEnd('\0');
+            Debug.WriteLine($"Extracted String: \"{extracted}\" at index {index} (End: {end})");
 
             index = end + 1;
-            return Encoding.ASCII.GetString(msg, start, end - start).TrimEnd('\0');
+            return extracted;
         }
+
 
         private static byte[] GetBlob(byte[] msg, ref int index)
         {
